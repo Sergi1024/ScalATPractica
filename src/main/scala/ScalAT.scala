@@ -1,9 +1,9 @@
 import java.io._
-
 import org.sat4j.minisat.SolverFactory
 import org.sat4j.reader.DimacsReader
 import org.sat4j.specs.{IProblem, ISolver}
 
+import scala.::
 import scala.Array._
 import scala.collection.JavaConverters._
 import scala.io.Source
@@ -147,7 +147,30 @@ class ScalAT(problemName: String = "", workingpath: String = "working/") {
   }
 
   //Adds the logaritic encoding of the at-most-one
-  def addAMOLog(x: List[Int]): Unit = ???
+  def addAMOLog(x: List[Int]): Unit = {
+
+    val n = x.length
+    if (n <= 1) return // No need to encode if there's only one or zero variables
+
+    val m = math.ceil(math.log(n) / math.log(2)).toInt // Number of auxiliary variables
+    val y = newVarArray(m) // Auxiliary variables
+
+    for (i <- x.indices) {
+      for (j <- 0 until m) {
+        val bit = (i >> j) & 1 // Get the j-th bit of index i
+        if (bit == 0) {
+          addClause(-x(i) :: -y(j) :: List())
+        } else {
+          addClause(-x(i) :: y(j) :: List())
+        }
+      }
+    }
+  }
+
+
+
+
+
 
   //Adds the encoding of the at-least-one.
   def addALO(l: List[Int]): Unit = addClause(l)
@@ -247,17 +270,33 @@ class ScalAT(problemName: String = "", workingpath: String = "working/") {
 
   //Adds the encoding of an exactly-K constraint.
   // x can be empty, and K take any value from -infinity to infinity
-  def addEK(x: List[Int], K: Int): Unit = ???
+  def addEK(x: List[Int], K: Int): Unit = {
+    addAMK(x,K)
+    addALK(x,K)
+  }
 
 
 
   //Adds the encoding of an at-least-K constraint.
   // x can be empty, and K take any value from -infinity to infinity
-  def addALK(x: List[Int], K: Int): Unit = ???
+  def addALK(x: List[Int], K: Int): Unit = {
+    val y = newVarArray(x.length).toList
+    if(x.length > K) {
+      addSorter(x, y)
+      addClause(y(K) ::List())
+    }
+
+  }
 
   //Adds the encoding of an at-most-K constraint.
   // x can be empty, and K take any value from -infinity to infinity
-  def addAMK(x: List[Int], K: Int): Unit = ???
+  def addAMK(x: List[Int], K: Int): Unit = {
+    val y = newVarArray(x.length).toList
+    if(x.length > K) {
+      addSorter(x, y)
+      addClause(-y(K) ::List())
+    }
+  }
 
 
   //Adds a PB constraint of the form q[0]x[0] + q[1]x[1] + ... + q[n]x[n] <= K
