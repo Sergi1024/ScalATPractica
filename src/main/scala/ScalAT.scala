@@ -277,15 +277,29 @@ class ScalAT(problemName: String = "", workingpath: String = "working/") {
 
 
 
-  //Adds the encoding of an at-least-K constraint.
-  // x can be empty, and K take any value from -infinity to infinity
+  // Adds the encoding of an at-least-K constraint.
+  // x can be empty, and K can take any value.
   def addALK(x: List[Int], K: Int): Unit = {
-    val y = newVarArray(x.length).toList
-    if(x.length > K) {
-      addSorter(x, y)
-      addClause(y(K) ::List())
+    if (K <= 0) {
+      // "Com a mínim 0" sempre es compleix, no cal fer res
+      return
     }
 
+    if (x.isEmpty || K > x.length) {
+      // Restricció insatisfactòria: no hi ha prou variables per satisfer K
+      addClause(List()) // Afegeix una clàusula buida -> UNSAT
+      return
+    }
+
+    if (x.length > K) {
+      // Utilitza un "sorter" o una codificació de restriccions de cardinalitat
+      val y = newVarArray(x.length).toList // Variables auxiliars
+      addSorter(x, y)                     // Ordena x en y
+      addClause(List(y(K - 1)))           // Garanteix que com a mínim K variables siguin certes
+    } else {
+      // Si x.length == K, totes les variables de x han de ser certes
+      x.foreach(v => addClause(List(v)))
+    }
   }
 
   //Adds the encoding of an at-most-K constraint.

@@ -16,12 +16,12 @@ object NQueens extends App {
 
   //A cada contradiagonal hi ha com a molt una reina
   for (v <- 0 to 2 * n - 2) {
-    e.addAMOLog((for (i <- 0 until n; j <- 0 until n; if i + j == v) yield tauler(i)(j)).toList)
+    e.addAMK((for (i <- 0 until n; j <- 0 until n; if i + j == v) yield tauler(i)(j)).toList,1)
   }
 
   //A cada diagonal hi ha com a molt una reina
   for (v <- -n + 1 until n) {
-    e.addAMOLog((for (i <- 0 until n; j <- 0 until n; if i - j == v) yield tauler(i)(j)).toList)
+    e.addAMK((for (i <- 0 until n; j <- 0 until n; if i - j == v) yield tauler(i)(j)).toList,1)
   }
 
   def getQueensPositions = tauler
