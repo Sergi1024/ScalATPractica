@@ -6,7 +6,7 @@ object MinesweeperSolver {
   case class Cell(row: Int, col: Int)
 
   def main(args: Array[String]): Unit = {
-    val inputFilePath = "C:\\Users\\pablo\\Documents\\Uni\\4rto\\ProgDecl\\ScalATPractica\\src\\main\\instancies\\buscamines70.txt"  // Ruta al fitxer d'entrada
+    val inputFilePath = "C:\\Users\\pablo\\Documents\\Uni\\4rto\\ProgDecl\\ScalATPractica\\src\\main\\instancies\\buscamines350.txt"  // Ruta al fitxer d'entrada
     val outputFilePath = "output.txt" // Ruta al fitxer de sortida
 
     val lines = Source.fromFile(inputFilePath).getLines().toList
@@ -28,8 +28,15 @@ object MinesweeperSolver {
           val adjacentCells = getAdjacentCells(i, j, n, m) // Obté les cel·les adjacents
           val adjacentVars = adjacentCells.map { case Cell(row, col) => variables(row)(col) }
 
-          // Afegeix restricció que hi ha exactament 'num' mines adjacents
-          solver.addEK(adjacentVars, num.toInt)
+          if (num.toInt == 0) {
+            adjacentVars.foreach(v => solver.addClause(List(-v))) // Marca totes les cel·les adjacents com a segures
+          }
+          else if (adjacentVars.size == num.toInt) {
+            adjacentVars.foreach(v => solver.addClause(List(v))) // Marca totes les cel·les adjacents com a mines
+          }
+          else {
+            solver.addEK(adjacentVars, num.toInt) // Afegeix restricció que hi ha exactament 'num' mines adjacents
+          }
           // Assegura que aquesta cel·la no pot ser mina (és segura)
           solver.addClause(List(-variables(i)(j)))
         case _ => throw new IllegalArgumentException("Entrada no vàlida")
